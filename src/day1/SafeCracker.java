@@ -7,13 +7,13 @@ import java.io.IOException;
 public class SafeCracker {
     private final String filepath;
     private Integer currentPoint;
-    private Integer zeroCount;
+    private Integer landOnZero;
     private Integer passThroughZero;
 
     public SafeCracker(String filepath,  Integer startPoint){
         this.filepath = filepath;
         this.currentPoint = startPoint;
-        this.zeroCount = 0;
+        this.landOnZero = 0;
         this.passThroughZero = 0;
     }
 
@@ -24,7 +24,7 @@ public class SafeCracker {
                 Rotation rotation = new Rotation(line.strip());
                 this.currentPoint = rotation.applyRotation(this.currentPoint);
                 if(this.currentPoint == 0){
-                    this.zeroCount++;
+                    this.landOnZero++;
                 }
                 this.passThroughZero += rotation.getPassThroughZero();
             }
@@ -37,7 +37,7 @@ public class SafeCracker {
         return this.passThroughZero;
     }
 
-    public Integer getZeroCount() {
-        return this.zeroCount;
+    public Integer getLandOnZero() {
+        return this.landOnZero;
     }
 }

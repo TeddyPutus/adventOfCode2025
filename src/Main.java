@@ -12,7 +12,6 @@ void main() {
 
     System.out.println("-------------------------------------");
     IO.println("Safe cracked!!");
-    IO.println("Times landed on zero: " + safeCracker.getZeroCount());
+    IO.println("Times landed on zero: " + safeCracker.getLandOnZero());
     IO.println("Times passed through zero: " + safeCracker.getPassThroughZero());
-    IO.println("Total times on zero: " + (safeCracker.getZeroCount() + safeCracker.getPassThroughZero()));
 }
