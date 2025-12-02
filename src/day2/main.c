@@ -4,8 +4,8 @@
 // #include <regex.h> - not supported in windows :'( IF ONLY!
 // regex expression would be "(\d+)(\1)"
 
-const char relativePath[] = "../../input_files/day_2_example.txt";
-// const char relativePath[] = "../../input_files/day_2.txt";
+// const char relativePath[] = "../../input_files/day_2_example.txt";
+const char relativePath[] = "../../input_files/day_2.txt";
 
 const char pairSeparator = '-';
 const char setSeparator =  ',';
@@ -35,6 +35,7 @@ int getPairFromFile(FILE* file, char *buffer[2]) {
     }
 
     if (ch == EOF) {
+        buffer[1] = strdup(extractedNumber);
         return 1;
     }
     return 0;
@@ -98,6 +99,12 @@ int main() {
         printf("InvalidIdCount: %d\n", invalidIdCount);
         resetBuffer(pair_buffer);
     }
+
+
+    printf("----------------\n");
+    invalidIdCount += getInvalidIdCount(pair_buffer);
+    printf("%s - %s\n", pair_buffer[0], pair_buffer[1]);
+    printf("InvalidIdCount: %d\n", invalidIdCount);
 
     return 0;
 }
