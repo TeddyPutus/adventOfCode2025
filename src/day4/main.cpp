@@ -21,50 +21,62 @@ int main() {
         fileInput.push_back(line);
     }
 
+    while (true) {
+        int numberRemoved = 0;
     for(std::size_t i = 0; i < fileInput.size(); ++i) {
         bool canLookUp = (i > 0);
         bool canLookDown = (i < (fileInput.size() - 1));
 
-        for(std::size_t x = 0; x < fileInput[i].size(); x++) {
-            if (fileInput[i][x] != ROLL) {
-                continue;
-            }
 
-            int adjacentRolls = 0;
+            for(std::size_t x = 0; x < fileInput[i].size(); x++) {
+                if (fileInput[i][x] != ROLL) {
+                    continue;
+                }
 
-            bool canLookLeft = (x > 0);
-            bool canLookRight = (x < (fileInput[i].size() - 1));
+                int adjacentRolls = 0;
 
-            if (canLookUp && fileInput[i-1][x] == ROLL) {
-                adjacentRolls++;
-            }
-            if (canLookDown && fileInput[i+1][x] == ROLL) {
-                adjacentRolls++;
-            }
-            if (canLookRight && fileInput[i][x+1] == ROLL) {
-                adjacentRolls++;
-            }
-            if (canLookLeft && fileInput[i][x-1] == ROLL) {
-                adjacentRolls++;
-            }
-            if (canLookUp && canLookRight && fileInput[i-1][x+1] == ROLL) {
-                adjacentRolls++;
-            }
-            if (canLookUp && canLookLeft && fileInput[i-1][x-1] == ROLL) {
-                adjacentRolls++;
-            }
-            if (canLookDown && canLookRight && fileInput[i+1][x+1] == ROLL) {
-                adjacentRolls++;
-            }
-            if (canLookDown && canLookLeft && fileInput[i+1][x-1] == ROLL) {
-                adjacentRolls++;
-            }
+                bool canLookLeft = (x > 0);
+                bool canLookRight = (x < (fileInput[i].size() - 1));
 
-            if (adjacentRolls <= MAX_ADJACENT) {
-                totalAccessible += 1;
+                if (canLookUp && fileInput[i-1][x] == ROLL) {
+                    adjacentRolls++;
+                }
+                if (canLookDown && fileInput[i+1][x] == ROLL) {
+                    adjacentRolls++;
+                }
+                if (canLookRight && fileInput[i][x+1] == ROLL) {
+                    adjacentRolls++;
+                }
+                if (canLookLeft && fileInput[i][x-1] == ROLL) {
+                    adjacentRolls++;
+                }
+                if (canLookUp && canLookRight && fileInput[i-1][x+1] == ROLL) {
+                    adjacentRolls++;
+                }
+                if (canLookUp && canLookLeft && fileInput[i-1][x-1] == ROLL) {
+                    adjacentRolls++;
+                }
+                if (canLookDown && canLookRight && fileInput[i+1][x+1] == ROLL) {
+                    adjacentRolls++;
+                }
+                if (canLookDown && canLookLeft && fileInput[i+1][x-1] == ROLL) {
+                    adjacentRolls++;
+                }
+
+                if (adjacentRolls <= MAX_ADJACENT) {
+                    fileInput[i][x] = MARKED;
+                    totalAccessible += 1;
+                    numberRemoved += 1;
+                }
             }
+            std::cout << fileInput[i] << "\n";
+    }
+        std::cout << "Number removed: " << numberRemoved << "\n";
+        if (numberRemoved == 0) {
+            break;
         }
-        std::cout << fileInput[i] << "\n";
+
+
 
     }
 
