@@ -74,9 +74,7 @@ int main() {
                         continue;
                     }
 
-                    const int adjacentRolls = getAdjacentRolls(column, row);
-
-                    if (adjacentRolls <= MAX_ADJACENT) {
+                    if (const int adjacentRolls = getAdjacentRolls(column, row); adjacentRolls <= MAX_ADJACENT) {
                         markSpot(RUN_MODE, row, column);
                         totalAccessible += 1;
                         numberRemoved += 1;
