@@ -68,19 +68,18 @@ int main() {
     while (whileCondition(loopCount++, RUN_MODE)) {
         int numberRemoved = 0;
         for(std::size_t row = 0; row < fileInput.size(); row++) {
-
-                for(std::size_t column = 0; column < fileInput[row].size(); column++) {
-                    if (fileInput[row][column] != ROLL) {
-                        continue;
-                    }
-
-                    if (const int adjacentRolls = getAdjacentRolls(column, row); adjacentRolls <= MAX_ADJACENT) {
-                        markSpot(RUN_MODE, row, column);
-                        totalAccessible += 1;
-                        numberRemoved += 1;
-                    }
+            for(std::size_t column = 0; column < fileInput[row].size(); column++) {
+                if (fileInput[row][column] != ROLL) {
+                    continue;
                 }
-                std::cout << fileInput[row] << "\n";
+
+                if (const int adjacentRolls = getAdjacentRolls(column, row); adjacentRolls <= MAX_ADJACENT) {
+                    markSpot(RUN_MODE, row, column);
+                    totalAccessible += 1;
+                    numberRemoved += 1;
+                }
+            }
+            std::cout << fileInput[row] << "\n";
         }
         std::cout << "Number removed: " << numberRemoved << "\n";
         if (numberRemoved == 0) {
