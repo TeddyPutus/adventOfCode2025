@@ -10,31 +10,48 @@ constexpr char ROLL = '@';
 constexpr char MARKED = 'X';
 constexpr int MAX_ADJACENT = 3;
 
+enum MODE {ONCE, FOREVER};
+constexpr MODE RUN_MODE = ONCE; // part 1
+// constexpr MODE RUN_MODE = FOREVER; // part 2
+
+
 std::vector<std::string> fileInput;
 
-int main() {
+bool whileCondition(const int loopCount, const MODE runMode) {
+    if (runMode == FOREVER) {
+        return true;
+    }
+    return loopCount < 1;
+}
+
+void loadFile() {
     std::ifstream inputFile(FILEPATH);
     std::string line;
-    int totalAccessible = 0;
 
     while (getline(inputFile, line)) {
-        // std::cout << line << "\n";
         fileInput.push_back(line);
     }
+}
 
-    while (true) {
+int main() {
+    int totalAccessible = 0;
+    int loopCount = 0;
+
+    loadFile();
+
+    while (whileCondition(loopCount, RUN_MODE)) {
         int numberRemoved = 0;
         for(std::size_t i = 0; i < fileInput.size(); ++i) {
-            const bool canLookUp = (i > 0);
-            const bool canLookDown = (i < (fileInput.size() - 1));
+            const bool canLookUp = i > 0;
+            const bool canLookDown = i < fileInput.size() - 1;
 
                 for(std::size_t x = 0; x < fileInput[i].size(); x++) {
                     if (fileInput[i][x] != ROLL) {
                         continue;
                     }
 
-                    const bool canLookLeft = (x > 0);
-                    const bool canLookRight = (x < (fileInput[i].size() - 1));
+                    const bool canLookLeft = x > 0;
+                    const bool canLookRight = x < fileInput[i].size() - 1;
 
                     const int adjacentRolls = (canLookUp && fileInput[i-1][x] == ROLL) +
                         (canLookDown && fileInput[i+1][x] == ROLL) +
@@ -47,7 +64,10 @@ int main() {
 
 
                     if (adjacentRolls <= MAX_ADJACENT) {
-                        fileInput[i][x] = MARKED;
+                        if (RUN_MODE == FOREVER) {
+                            fileInput[i][x] = MARKED;
+                        }
+
                         totalAccessible += 1;
                         numberRemoved += 1;
                     }
@@ -58,7 +78,7 @@ int main() {
         if (numberRemoved == 0) {
             break;
         }
-
+        loopCount++;
     }
 
     std::cout << "PROCESSING COMPLETE!!!!!" << "\n";
