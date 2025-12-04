@@ -3,12 +3,13 @@
 #include <iterator>
 #include <fstream>
 
-// const std::string FILEPATH = "../../input_files/day_4_example.txt";
-const std::string FILEPATH = "../../input_files/day_4.txt";
+const std::string FILEPATH = "../../input_files/day_4_example.txt";
+// const std::string FILEPATH = "../../input_files/day_4.txt";
 
 constexpr char ROLL = '@';
 constexpr char MARKED = 'X';
 constexpr int MAX_ADJACENT = 3;
+
 std::vector<std::string> fileInput;
 
 int main() {
@@ -23,60 +24,40 @@ int main() {
 
     while (true) {
         int numberRemoved = 0;
-    for(std::size_t i = 0; i < fileInput.size(); ++i) {
-        bool canLookUp = (i > 0);
-        bool canLookDown = (i < (fileInput.size() - 1));
+        for(std::size_t i = 0; i < fileInput.size(); ++i) {
+            const bool canLookUp = (i > 0);
+            const bool canLookDown = (i < (fileInput.size() - 1));
+
+                for(std::size_t x = 0; x < fileInput[i].size(); x++) {
+                    if (fileInput[i][x] != ROLL) {
+                        continue;
+                    }
+
+                    const bool canLookLeft = (x > 0);
+                    const bool canLookRight = (x < (fileInput[i].size() - 1));
+
+                    const int adjacentRolls = (canLookUp && fileInput[i-1][x] == ROLL) +
+                        (canLookDown && fileInput[i+1][x] == ROLL) +
+                        (canLookRight && fileInput[i][x+1] == ROLL) +
+                        (canLookLeft && fileInput[i][x-1] == ROLL) +
+                        (canLookUp && canLookRight && fileInput[i-1][x+1] == ROLL) +
+                        (canLookUp && canLookLeft && fileInput[i-1][x-1] == ROLL) +
+                        (canLookDown && canLookRight && fileInput[i+1][x+1] == ROLL) +
+                        (canLookDown && canLookLeft && fileInput[i+1][x-1] == ROLL);
 
 
-            for(std::size_t x = 0; x < fileInput[i].size(); x++) {
-                if (fileInput[i][x] != ROLL) {
-                    continue;
+                    if (adjacentRolls <= MAX_ADJACENT) {
+                        fileInput[i][x] = MARKED;
+                        totalAccessible += 1;
+                        numberRemoved += 1;
+                    }
                 }
-
-                int adjacentRolls = 0;
-
-                bool canLookLeft = (x > 0);
-                bool canLookRight = (x < (fileInput[i].size() - 1));
-
-                if (canLookUp && fileInput[i-1][x] == ROLL) {
-                    adjacentRolls++;
-                }
-                if (canLookDown && fileInput[i+1][x] == ROLL) {
-                    adjacentRolls++;
-                }
-                if (canLookRight && fileInput[i][x+1] == ROLL) {
-                    adjacentRolls++;
-                }
-                if (canLookLeft && fileInput[i][x-1] == ROLL) {
-                    adjacentRolls++;
-                }
-                if (canLookUp && canLookRight && fileInput[i-1][x+1] == ROLL) {
-                    adjacentRolls++;
-                }
-                if (canLookUp && canLookLeft && fileInput[i-1][x-1] == ROLL) {
-                    adjacentRolls++;
-                }
-                if (canLookDown && canLookRight && fileInput[i+1][x+1] == ROLL) {
-                    adjacentRolls++;
-                }
-                if (canLookDown && canLookLeft && fileInput[i+1][x-1] == ROLL) {
-                    adjacentRolls++;
-                }
-
-                if (adjacentRolls <= MAX_ADJACENT) {
-                    fileInput[i][x] = MARKED;
-                    totalAccessible += 1;
-                    numberRemoved += 1;
-                }
-            }
-            std::cout << fileInput[i] << "\n";
-    }
+                std::cout << fileInput[i] << "\n";
+        }
         std::cout << "Number removed: " << numberRemoved << "\n";
         if (numberRemoved == 0) {
             break;
         }
-
-
 
     }
 
