@@ -12,50 +12,16 @@ const char setSeparator =  ',';
 
 #define MAX_STRING_LEN 1024
 
-int getPairFromFile(FILE* file, char *buffer[2]) {
-    char ch;
-
-    char extractedNumber[MAX_STRING_LEN] = "\0";
-    int index = 0;
-
-    while ((ch = fgetc(file)) != EOF) {
-        if (ch == pairSeparator) {
-            index = 0;
-            buffer[0] = strdup(extractedNumber);
-            extractedNumber[0] = '\0';
-
-        }else if (ch == setSeparator) {
-            // two numbers retrieved
-            buffer[1] = strdup(extractedNumber);
-            return 0;
-        }else if (ch != '\n') {
-            extractedNumber[index] = ch;
-            index++;
-        }
-    }
-
-    if (ch == EOF) {
-        buffer[1] = strdup(extractedNumber);
-        return 1;
-    }
-    return 0;
-}
-
-void resetBuffer(char *buffer[2]) {
-    buffer[0] = (char *)malloc(MAX_STRING_LEN * sizeof(char));
-    buffer[1] = (char *)malloc(MAX_STRING_LEN * sizeof(char));
-}
-
 void raiseError(char *message){
     perror(message);
     exit(1);
 }
 
-int getInvalidIdCount(char *buffer[2]) {
+unsigned long long int getInvalidIdCount(char *buffer[2]) {
     int startNumber = atoi(buffer[0]);
     int endNumber = atoi(buffer[1]);
 
-    int invalidIdCount = 0;
+    unsigned long long int invalidIdCount = 0;
 
     for (int i = startNumber; i <= endNumber; i++) {
         char id[MAX_STRING_LEN];
@@ -70,9 +36,9 @@ int getInvalidIdCount(char *buffer[2]) {
             firstHalf[halfLength] = '\0';
             secondHalf[halfLength] = '\0';
 
-            if (strcmp(firstHalf, secondHalf) == 0) {
-                printf("InvalidId: %s\n", id);
-                invalidIdCount+= atoi(id);
+            if (atoi(firstHalf) == atoi(secondHalf)) {
+                // printf("InvalidId: %s\n", id);
+                invalidIdCount+= i;
             }
         }
 
@@ -85,26 +51,35 @@ int main() {
     if (file == NULL) {
         raiseError("File not found");
     }
+    // get file size to create a buffer of the right size
+    fseek(file, 0, SEEK_END);
+    int fileSize = ftell(file);
+    rewind(file);
+    char *fileContents = (char *)malloc(fileSize * sizeof(char));
+    int x = fread(fileContents, sizeof(char), fileSize, file);
+    fileContents[x] = '\0';
+
+    char *state1, *state2;
+    char* numberPairs = strtok_r(fileContents, &setSeparator, &state1);
 
     // Buffer to store each line of the file.
+    unsigned long long int invalidIdCount = 0;
     char *pair_buffer[2];
-    resetBuffer(pair_buffer);
-    int result;
-    int invalidIdCount = 0;
 
-    while ((result = getPairFromFile(file, pair_buffer)) == 0) {
+    while (numberPairs != NULL) {
+        pair_buffer[0] = strtok_r(numberPairs, &pairSeparator, &state2);
+        pair_buffer[1] = strtok_r(NULL, &pairSeparator, &state2);
         printf("----------------\n");
         invalidIdCount += getInvalidIdCount(pair_buffer);
         printf("%s - %s\n", pair_buffer[0], pair_buffer[1]);
-        printf("InvalidIdCount: %d\n", invalidIdCount);
-        resetBuffer(pair_buffer);
+        printf("InvalidIdCount: %llu\n", invalidIdCount);
+        numberPairs = strtok_r(NULL, &setSeparator, &state1);
     }
-
 
     printf("----------------\n");
     invalidIdCount += getInvalidIdCount(pair_buffer);
     printf("%s - %s\n", pair_buffer[0], pair_buffer[1]);
-    printf("InvalidIdCount: %d\n", invalidIdCount);
+    printf("InvalidIdCount: %llu\n", invalidIdCount);
 
     return 0;
 }
