@@ -65,9 +65,9 @@ int main() {
 
     loadFile();
 
-    while (whileCondition(loopCount, RUN_MODE)) {
+    while (whileCondition(loopCount++, RUN_MODE)) {
         int numberRemoved = 0;
-        for(std::size_t row = 0; row < fileInput.size(); ++row) {
+        for(std::size_t row = 0; row < fileInput.size(); row++) {
 
                 for(std::size_t column = 0; column < fileInput[row].size(); column++) {
                     if (fileInput[row][column] != ROLL) {
@@ -84,10 +84,9 @@ int main() {
         }
         std::cout << "Number removed: " << numberRemoved << "\n";
         if (numberRemoved == 0) {
-            // Nothing left to remove (specific to part 2)
+            // Nothing left to remove, can break out early
             break;
         }
-        loopCount++;
     }
 
     std::cout << "PROCESSING COMPLETE!!!!!" << "\n";
