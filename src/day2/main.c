@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-// #include <regex.h> - not supported in windows :'( IF ONLY!
-// regex expression would be "(\d+)(\1)"
 
 typedef unsigned long long int BigNumber;
 
@@ -15,7 +13,7 @@ const char setSeparator =  ',';
 
 #define MAX_STRING_LEN 1024
 
-void raiseError(char *message){
+void raiseError(const char *message){
     perror(message);
     exit(1);
 }
@@ -25,47 +23,23 @@ int numPlaces (const BigNumber n) {
     return 1 + numPlaces (n / 10);
 }
 
-BigNumber  getDigit(BigNumber  number, int digit){
+BigNumber  getDigit(const BigNumber  number, const int digit){
     return number / (BigNumber) pow(10, digit) % 10;
 }
 
-BigNumber extractNumber(BigNumber id, int digitCount) {
+BigNumber extractNumber(const BigNumber id, const int digitCount) {
+    // Extracts digitCount digits from id. Retrieves from least significant -> most significant
     BigNumber result = 0;
     for (int x = 1; x <= digitCount; x++) {
         result = result * 10 + getDigit(id, digitCount - x);
     }
+    if (numPlaces(result) != digitCount) return 0; // in this case, there was a leading zero, don't match on this
     return result;
 }
 
-BigNumber rebuildNumber(BigNumber value, int digitCount) {
-    for (int x = 1; x <= digitCount; x++) {
-        value = value * 10;
-    }
-    return value;
-}
-
-BigNumber dayOne(char *buffer[2]) {
-    BigNumber startNumber = atoll(buffer[0]);
-    BigNumber endNumber = atoll(buffer[1]);
-
-    BigNumber invalidIdCount = 0;
-
-    for (BigNumber i = startNumber; i <= endNumber; i++) {
-        int digitCount = numPlaces(i);
-        if (digitCount % 2 != 0) continue;
-
-        BigNumber extractedNumber = extractNumber(i, digitCount/2);
-        BigNumber rebuiltNumber = rebuildNumber(extractedNumber, digitCount/2);
-        BigNumber combinedNumber = rebuiltNumber + extractedNumber;
-
-        if (i == combinedNumber) invalidIdCount+=i;
-    }
-    return invalidIdCount;
-}
-
-BigNumber fillNumber(BigNumber value, int targetDigitCount) {
-    if (value == 0) return 0;
-    if (targetDigitCount % numPlaces(value) != 0) return 0;
+BigNumber fillNumber(const BigNumber value, const int targetDigitCount) {
+    // Creates a repeating pattern out of value of targetDigitCount length
+    if (value == 0 || targetDigitCount % numPlaces(value) != 0) return 0;
 
     BigNumber mostSignificantMultiplier = pow(10, targetDigitCount - numPlaces(value));
     BigNumber filledNumber = value;
@@ -77,28 +51,41 @@ BigNumber fillNumber(BigNumber value, int targetDigitCount) {
     return filledNumber;
 }
 
-BigNumber dayTwo(char *buffer[2]) {
-    BigNumber startNumber = atoll(buffer[0]);
-    BigNumber endNumber = atoll(buffer[1]);
+BigNumber parseBigNum(char* number) {
+    char *eptr;
+    const BigNumber result = strtoll(number, &eptr, 10);
+    if (eptr == number) {
+        const char* errorTemplate = "Invalid input: %s";
+        char errorMessage[strlen(errorTemplate) + strlen(number) + 1];
+        snprintf(errorMessage, strlen(errorTemplate) + strlen(number), errorTemplate, number);
+        raiseError(errorMessage);
+    }
+    return result;
+}
 
-    BigNumber invalidIdCount = 0;
+void processInput(char *buffer[2], BigNumber *results) {
+    const BigNumber startNumber = parseBigNum(buffer[0]);
+    const BigNumber endNumber = parseBigNum(buffer[1]);
 
     for (BigNumber i = startNumber; i <= endNumber; i++) {
-        int digitCount = numPlaces(i);
+        const int digitCount = numPlaces(i);
 
-        for (int x = 1; x <= digitCount/2; x++) {
-            BigNumber extractedNumber = extractNumber(i, x);
-            BigNumber filledNumber = fillNumber(extractedNumber, digitCount);
+        for (int x = digitCount/2; x >= 1; x--) {
+            const BigNumber extractedNumber = extractNumber(i, x);
+            const BigNumber filledNumber = fillNumber(extractedNumber, digitCount);
 
             if (i == filledNumber) {
-                invalidIdCount+=i;
+                if (x == digitCount/2 && digitCount % 2 == 0) {
+                    // Part one requires match to be of one number repeated twice
+                    // This also means an even number of digits (integer division rounds down)
+                    results[0]+=i;
+                }
+                // Part 2 is any match
+                results[1]+=i;
                 break;
             }
         }
-
-
     }
-    return invalidIdCount;
 }
 
 char *getFileContents(char* relativePath) {
@@ -131,23 +118,24 @@ int main() {
     char* numberPairs = strtok_r(fileContents, &setSeparator, &state1);
 
     // Buffer to store each line of the file.
-    BigNumber dayOneCount = 0;
-    BigNumber dayTwoCount = 0;
     char *pair_buffer[2];
+    // results = [day1, day2]
+    BigNumber results[] = {0,0};
 
     while (numberPairs != NULL) {
         pair_buffer[0] = strtok_r(numberPairs, &pairSeparator, &state2);
         pair_buffer[1] = strtok_r(NULL, &pairSeparator, &state2);
-        dayOneCount += dayOne(pair_buffer);
-        dayTwoCount += dayTwo(pair_buffer);
         printf("Checking: %s - %s\n", pair_buffer[0], pair_buffer[1]);
+        processInput(pair_buffer, &results);
         printf("----------------\n");
 
         numberPairs = strtok_r(NULL, &setSeparator, &state1);
     }
 
-    printf("Day One: %llu\n", dayOneCount);
-    printf("Day Two: %llu\n", dayTwoCount);
+    printf("Day One: %llu\n", results[0]);
+    printf("Day Two: %llu\n", results[1]);
     printf("----------------\n");
+
+    free(fileContents);
     return 0;
 }
