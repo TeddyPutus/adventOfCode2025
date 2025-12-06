@@ -1,17 +1,8 @@
 import java.io.File
 
-class Arithmetic(operator: String){
-    var numbers: List<Int> = mutableListOf<Int>();
+class Arithmetic(var operator: String){
+    var numbers: List<Int> = mutableListOf();
     var total: Long = 0;
-    var operator: String =
-        when (operator) {
-                        "+" -> operator;
-                        "*" -> operator;
-                        else -> {
-                            println("Invalid OP $operator");
-                            throw ArithmeticException("Invalid operator $operator");
-                            }
-                        }
 
     fun appendNumber(newNumber: Int){
         numbers += newNumber;
@@ -73,20 +64,20 @@ fun getLongestLineLength(input: List<String>) : Int{
 }
 
 fun partTwo(input: List<String> ){
-    var operations: List<Arithmetic> = mutableListOf<Arithmetic>();
+    val operations: MutableList<Arithmetic> = mutableListOf<Arithmetic>().toMutableList();
     val lineLength = getLongestLineLength(input);
 
-    var currentArithmetic = Arithmetic("+");
+    var currentArithmetic = Arithmetic("");
 
     for(index in 0 until lineLength + 1){
         var slice = getVerticalSlice(input, index);
-        var operator = slice.last().toString();
+        val operator = slice.last().toString();
         slice = slice.dropLast(1);
 
-        if(operator == "+" || operator == "*"){
+        if(!operator.trim().isEmpty()){
             currentArithmetic = Arithmetic(operator);
         }
-        if(slice.trim().length == 0){
+        if(slice.trim().isEmpty()){
             operations += currentArithmetic;
         }else{
             currentArithmetic.appendNumber(slice.trim().toInt());
@@ -96,7 +87,7 @@ fun partTwo(input: List<String> ){
 }
 
 fun main() {
-    val filepath = "YOUR_FILEPATH_HERE"
+    val filepath = "C:\\Users\\teddy\\IdeaProjects\\adventOfCode2025\\input_files\\day_6.txt"
     val input: List<String> = File(filepath).useLines { it.toList() };
     partOne(input);
     partTwo(input);
