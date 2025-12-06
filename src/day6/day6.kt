@@ -37,9 +37,6 @@ private fun Iterable<Arithmetic>.sumTotals(): Long {
     return sum;
 }
 
-fun readFileAsLinesUsingUseLines(fileName: String): List<String>
-        = File(fileName).useLines { it.toList() }
-
 fun partOne(input: List<String> ){
     var operations: List<Arithmetic> = mutableListOf<Arithmetic>();
 
@@ -100,7 +97,7 @@ fun partTwo(input: List<String> ){
 
 fun main() {
     val filepath = "YOUR_FILEPATH_HERE"
-    val input: List<String> = readFileAsLinesUsingUseLines(filepath);
+    val input: List<String> = File(filepath).useLines { it.toList() };
     partOne(input);
     partTwo(input);
 }
