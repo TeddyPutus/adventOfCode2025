@@ -31,14 +31,14 @@ BigNumber  getDigit(BigNumber  number, int digit){
 
 BigNumber extractNumber(BigNumber id, int digitCount) {
     BigNumber result = 0;
-    for (int x = 1; x <= digitCount/2; x++) {
+    for (int x = 1; x <= digitCount; x++) {
         result = result * 10 + getDigit(id, digitCount - x);
     }
     return result;
 }
 
 BigNumber rebuildNumber(BigNumber value, int digitCount) {
-    for (int x = 1; x <= digitCount/2; x++) {
+    for (int x = 1; x <= digitCount; x++) {
         value = value * 10;
     }
     return value;
@@ -54,11 +54,47 @@ BigNumber getInvalidIdCount(char *buffer[2]) {
         int digitCount = numPlaces(i);
         if (digitCount % 2 != 0) continue;
 
-        BigNumber extractedNumber = extractNumber(i, digitCount);
-        BigNumber rebuiltNumber = rebuildNumber(extractedNumber, digitCount);
+        BigNumber extractedNumber = extractNumber(i, digitCount/2);
+        BigNumber rebuiltNumber = rebuildNumber(extractedNumber, digitCount/2);
         BigNumber combinedNumber = rebuiltNumber + extractedNumber;
 
         if (i == combinedNumber) invalidIdCount+=i;
+    }
+    return invalidIdCount;
+}
+
+BigNumber fillNumber(BigNumber value, int targetDigitCount) {
+    if (value == 0) return 0;
+    BigNumber mostSignificantMultiplier = pow(10, targetDigitCount - numPlaces(value));
+    BigNumber filledNumber = value;
+
+    while (mostSignificantMultiplier > 1) {
+        filledNumber += value * mostSignificantMultiplier;
+        mostSignificantMultiplier = mostSignificantMultiplier / pow(10, numPlaces(value));
+    }
+    return filledNumber;
+}
+
+BigNumber dayTwo(char *buffer[2]) {
+    BigNumber startNumber = atoll(buffer[0]);
+    BigNumber endNumber = atoll(buffer[1]);
+
+    BigNumber invalidIdCount = 0;
+
+    for (BigNumber i = startNumber; i <= endNumber; i++) {
+        int digitCount = numPlaces(i);
+
+        for (int x = 1; x <= digitCount/2; x++) {
+            BigNumber extractedNumber = extractNumber(i, x);
+            BigNumber filledNumber = fillNumber(extractedNumber, digitCount);
+
+            if (i == filledNumber) {
+                invalidIdCount+=i;
+                break;
+            }
+        }
+
+
     }
     return invalidIdCount;
 }
@@ -93,19 +129,23 @@ int main() {
     char* numberPairs = strtok_r(fileContents, &setSeparator, &state1);
 
     // Buffer to store each line of the file.
-    BigNumber invalidIdCount = 0;
+    BigNumber dayOneCount = 0;
+    BigNumber dayTwoCount = 0;
     char *pair_buffer[2];
 
     while (numberPairs != NULL) {
         pair_buffer[0] = strtok_r(numberPairs, &pairSeparator, &state2);
         pair_buffer[1] = strtok_r(NULL, &pairSeparator, &state2);
+        dayOneCount += getInvalidIdCount(pair_buffer);
+        dayTwoCount += dayTwo(pair_buffer);
+        printf("Checking: %s - %s\n", pair_buffer[0], pair_buffer[1]);
         printf("----------------\n");
-        BigNumber idCount = getInvalidIdCount(pair_buffer);
-        invalidIdCount += idCount;//getInvalidIdCount(pair_buffer);
-        printf("%s - %s\n", pair_buffer[0], pair_buffer[1]);
-        printf("idCount = %llu\n", idCount);
-        printf("InvalidIdCount: %llu\n", invalidIdCount);
+
         numberPairs = strtok_r(NULL, &setSeparator, &state1);
     }
+
+    printf("Day One: %llu\n", dayOneCount);
+    printf("Day Two: %llu\n", dayTwoCount);
+    printf("----------------\n");
     return 0;
 }
