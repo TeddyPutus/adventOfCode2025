@@ -44,7 +44,7 @@ BigNumber rebuildNumber(BigNumber value, int digitCount) {
     return value;
 }
 
-BigNumber getInvalidIdCount(char *buffer[2]) {
+BigNumber dayOne(char *buffer[2]) {
     BigNumber startNumber = atoll(buffer[0]);
     BigNumber endNumber = atoll(buffer[1]);
 
@@ -65,6 +65,8 @@ BigNumber getInvalidIdCount(char *buffer[2]) {
 
 BigNumber fillNumber(BigNumber value, int targetDigitCount) {
     if (value == 0) return 0;
+    if (targetDigitCount % numPlaces(value) != 0) return 0;
+
     BigNumber mostSignificantMultiplier = pow(10, targetDigitCount - numPlaces(value));
     BigNumber filledNumber = value;
 
@@ -136,7 +138,7 @@ int main() {
     while (numberPairs != NULL) {
         pair_buffer[0] = strtok_r(numberPairs, &pairSeparator, &state2);
         pair_buffer[1] = strtok_r(NULL, &pairSeparator, &state2);
-        dayOneCount += getInvalidIdCount(pair_buffer);
+        dayOneCount += dayOne(pair_buffer);
         dayTwoCount += dayTwo(pair_buffer);
         printf("Checking: %s - %s\n", pair_buffer[0], pair_buffer[1]);
         printf("----------------\n");
