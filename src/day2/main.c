@@ -11,8 +11,6 @@ const char relativePath[] = "../../input_files/day_2.txt";
 const char pairSeparator = '-';
 const char setSeparator =  ',';
 
-#define MAX_STRING_LEN 1024
-
 void raiseError(const char *message){
     perror(message);
     exit(1);
@@ -41,12 +39,12 @@ BigNumber fillNumber(const BigNumber value, const int targetDigitCount) {
     // Creates a repeating pattern out of value of targetDigitCount length
     if (value == 0 || targetDigitCount % numPlaces(value) != 0) return 0;
 
-    BigNumber mostSignificantMultiplier = pow(10, targetDigitCount - numPlaces(value));
+    BigNumber mostSignificantMultiplier = (BigNumber) pow(10, targetDigitCount - numPlaces(value));
     BigNumber filledNumber = value;
 
     while (mostSignificantMultiplier > 1) {
         filledNumber += value * mostSignificantMultiplier;
-        mostSignificantMultiplier = mostSignificantMultiplier / pow(10, numPlaces(value));
+        mostSignificantMultiplier = mostSignificantMultiplier / (BigNumber) pow(10, numPlaces(value));
     }
     return filledNumber;
 }
@@ -63,7 +61,7 @@ BigNumber parseBigNum(char* number) {
     return result;
 }
 
-void processInput(char *buffer[2], BigNumber *results) {
+void processInput(char *buffer[2], BigNumber results[2]) {
     const BigNumber startNumber = parseBigNum(buffer[0]);
     const BigNumber endNumber = parseBigNum(buffer[1]);
 
@@ -72,9 +70,8 @@ void processInput(char *buffer[2], BigNumber *results) {
 
         for (int x = digitCount/2; x >= 1; x--) {
             const BigNumber extractedNumber = extractNumber(i, x);
-            const BigNumber filledNumber = fillNumber(extractedNumber, digitCount);
 
-            if (i == filledNumber) {
+            if (i == fillNumber(extractedNumber, digitCount)) {
                 if (x == digitCount/2 && digitCount % 2 == 0) {
                     // Part one requires match to be of one number repeated twice
                     // This also means an even number of digits (integer division rounds down)
@@ -88,21 +85,21 @@ void processInput(char *buffer[2], BigNumber *results) {
     }
 }
 
-char *getFileContents(char* relativePath) {
-    FILE* file = fopen(relativePath, "r");
+char *getFileContents(const char* filepath) {
+    FILE* file = fopen(filepath, "r");
     if (file == NULL) {
         raiseError("File not found");
     }
     // get file size to create a buffer of the right size
     fseek(file, 0, SEEK_END);
-    int fileSize = ftell(file);
+    const long fileSize = ftell(file);
 
     // reset to start of file
     rewind(file);
 
     // initialise buffer of correct size and read data into file
     char *fileContents = (char *)malloc(fileSize * sizeof(char));
-    int x = fread(fileContents, sizeof(char), fileSize, file);
+    BigNumber x = fread(fileContents, sizeof(char), fileSize, file);
     // buffer must be null terminated!
     fileContents[x] = '\0';
 
@@ -126,7 +123,7 @@ int main() {
         pair_buffer[0] = strtok_r(numberPairs, &pairSeparator, &state2);
         pair_buffer[1] = strtok_r(NULL, &pairSeparator, &state2);
         printf("Checking: %s - %s\n", pair_buffer[0], pair_buffer[1]);
-        processInput(pair_buffer, &results);
+        processInput(pair_buffer, results);
         printf("----------------\n");
 
         numberPairs = strtok_r(NULL, &setSeparator, &state1);
