@@ -18,7 +18,7 @@ class Arithmetic(var operator: String){
             }
         }
     }
-    }
+}
 
 private fun Iterable<Arithmetic>.sumTotals(): Long {
     var sum: Long = 0;
@@ -29,7 +29,7 @@ private fun Iterable<Arithmetic>.sumTotals(): Long {
 }
 
 fun partOne(input: List<String> ){
-    var operations: List<Arithmetic> = mutableListOf<Arithmetic>();
+    val operations: MutableList<Arithmetic> = mutableListOf<Arithmetic>().toMutableList();
 
     for((lineIndex, line) in input.reversed().withIndex()){
         val splitLine = line.trim().split("\\s+".toRegex())
@@ -87,7 +87,7 @@ fun partTwo(input: List<String> ){
 }
 
 fun main() {
-    val filepath = "C:\\Users\\teddy\\IdeaProjects\\adventOfCode2025\\input_files\\day_6.txt"
+    val filepath = "YOUR_FILEPATH";
     val input: List<String> = File(filepath).useLines { it.toList() };
     partOne(input);
     partTwo(input);
