@@ -1,5 +1,5 @@
 <?php
-$fp = "../../input_files/day_7.txt";
+$fp = "../../input_files/day_7_example.txt";
 
 $START_CHAR = "S";
 $BEAM_SPLITTER = "^";
@@ -13,6 +13,8 @@ $startLocation = [strpos($line, $START_CHAR), 0];
 $splitCounter = 0;
 $uniqueSplitCounter = 0;
 $beamSet = array();
+
+$totalPaths = 0;
 
 
 echo "Start location is $startLocation[0]\n";
@@ -35,11 +37,13 @@ while (($line = fgets($file)) !== false) {
                     unset($beamSet[$key]);
                 }
                 if($beamX > 0){
+                    $totalPaths += 1;
                     $splitterUnique += 1;
                     $beamSet[] = $beamX - 1;
                     $line[$beamX - 1] = $BEAM;
                 }
                 if($beamX < strlen($line) - 1){
+                    $totalPaths += 1;
                     $splitterUnique += 1;
                     $beamSet[] = $beamX + 1;
                     $line[$beamX + 1] = $BEAM;
@@ -55,7 +59,8 @@ while (($line = fgets($file)) !== false) {
     $lineCount++;
 }
 $result = count($beamSet);
-echo "Result: $uniqueSplitCounter\n";
+echo "PART 1 Result: $uniqueSplitCounter\n";
+echo "PART 2 Result: $totalPaths\n";
 fclose($file);
 
 function getLocations($line, $row){
