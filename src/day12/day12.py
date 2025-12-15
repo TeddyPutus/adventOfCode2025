@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import math
 from enum import Enum
 
 class Directions(Enum):
@@ -9,7 +11,7 @@ class Directions(Enum):
 
 class Shape:
     def __init__(self, map: list[list[str]]):
-        self.map = map
+        self.map = map#[["#" if char != "." else "." for char in line ] for line in map]
         self.height = len(self.map)
         self.length = len(self.map[0])
         self.area = self.height * self.length
@@ -22,10 +24,13 @@ class Shape:
     def _rotate(self, map: list[list[str]]) -> list[list[str]]:
         return list(zip(*map))[::-1]
 
-    def rotate(self, direction: int) -> list[list[str]]:
+    def rotate(self, direction: int = 1) -> list[list[str]]:
             map = self.map.copy()
             for i in range(direction):
                 map = self._rotate(map)
+            self.map = map
+            self.height = len(self.map)
+            self.length = len(self.map[0])
             return map
 
     def empty_space(self) -> int:
@@ -112,6 +117,104 @@ class Shape:
                         smallest_shape = new_shape
         return smallest_shape
 
+class Canvas:
+    def __init__(self, shape_1: Shape, shape_2: Shape, v_pad: int, h_pad: int):
+        self.height = v_pad + max(shape_1.height, shape_2.height)
+        self.width = shape_1.length + shape_2.length
+        self.canvas = [
+            ["." for _ in range(self.width)]
+            for _ in range(self.height)
+        ]
+        # self.hash_count = 0
+
+    @property
+    def hash_count(self):
+        count = 0
+        for y in self.canvas:
+            for x in y:
+                if x != ".":
+                    count+=1
+        return count
+
+    def draw(self, shape: Shape, origin_y: int, origin_x: int, fill: str = "#"):
+        for y in range(origin_y, origin_y + shape.height):
+            for x in range(origin_x, origin_x + shape.length):
+                if shape.map[y - origin_y][x - origin_x] != ".":
+                    # if self.canvas[y][x] != ".":
+                    #     raise Exception("Drawing on filled tile")
+                    self.canvas[y][x] = fill
+
+    def clear(self):
+        self.canvas = [
+            ["." for _ in range(self.width)]
+            for _ in range(self.height)
+        ]
+
+
+
+def create_canvas(shape_1: Shape, shape_2: Shape, v_pad: int, h_pad: int):
+    height = v_pad + max(
+        shape_1.height,
+        shape_2.height)
+    width = shape_2.length + h_pad
+
+    return [
+        ["." for _ in range(width)]
+        for _ in range(height)
+    ]
+
+
+def combine_shapes(shape_1: Shape, shape_2: Shape, debug=True):
+    smallest_shape = None
+
+    for a in range(Directions.LEFT.value + 1):
+        if a > 0:
+            shape_1.rotate()
+        for b in range(Directions.LEFT.value + 1):
+            if b > 0:
+                shape_2.rotate()
+
+            for v in range(0, shape_2.height):
+                for h in range(0, shape_1.length):
+                    canvas = Canvas(shape_1, shape_2, abs(v), 0)
+                    canvas.draw(shape_1, 0, 0, "A")
+                    try:
+                        canvas.draw(shape_2, v, h, "B")
+                        new_shape = trim(canvas.canvas, {"A", "B"})
+                        if canvas.hash_count == (shape_1.hashes + shape_2.hashes) and (smallest_shape is None or  new_shape.area < smallest_shape.area):
+                            smallest_shape = new_shape
+
+                        # if debug:
+                        #     print("-"*20)
+                        #     for line in new_shape.map:
+                        #         print(line)
+
+                    except Exception:
+                        continue
+    return smallest_shape
+
+                # Add shape 1 from origin (v*-1),0
+                # Add shape 2 0, h*-1
+                # check number of hashes, if correct amount AND area smaller than smallest shape, replace smallest shape
+def trim(new_map:list[list[str]], pattern_chars: set[str] = {"#"}):
+    def _vertical_slice(map: list[list[str]], index:int, pop=False):
+        if pop:
+            return [m.pop(index) for m in map]
+        return [m[index] for m in map]
+
+    while len(new_map) and not pattern_chars.intersection(set(new_map[0])):
+        new_map.pop(0)
+    while len(new_map) and not pattern_chars.intersection(set(new_map[-1])):
+        new_map.pop()
+    while len(new_map[0]) and not pattern_chars.intersection(set( _vertical_slice(new_map, 0, False))):
+        _vertical_slice(new_map, 0, True)
+    while len(new_map[0]) and  not pattern_chars.intersection(set( _vertical_slice(new_map, -1, False))):
+        _vertical_slice(new_map, -1, True)
+    return Shape(new_map)
+
+
+
+
 # filepath = "day12_example.txt"
 filepath = "C:/Users/teddy/IdeaProjects/adventOfCode2025/src/day12/day_12_example.txt"
 
@@ -140,9 +243,19 @@ for i, line in enumerate(input):
         # Figure out smallest area using rotations
         pass
 
-print(f"Total is {total}")
-new_shape = shapes[4].copy().combine(shapes[4].copy())
+# print(f"Total is {total}")
+# new_shape = shapes[4].copy().combine(shapes[4].copy())
+# print("-"*20)
+# for line in new_shape.map:
+#     print(line)
+
+print("USING CANVAS!!!!!!!!")
+new_shape = combine_shapes(shapes[4].copy(), shapes[4].copy(), False)
 print("-"*20)
 for line in new_shape.map:
     print(line)
 
+second_shape = combine_shapes(new_shape.copy(), shapes[0].copy())
+print("-"*20)
+for line in second_shape.map:
+    print(line)
