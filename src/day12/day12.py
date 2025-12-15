@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import math
+import sys
 from enum import Enum
+from itertools import permutations
+
 
 class Directions(Enum):
     UP = 0
@@ -163,8 +166,15 @@ def create_canvas(shape_1: Shape, shape_2: Shape, v_pad: int, h_pad: int):
         for _ in range(height)
     ]
 
+combine_cache = {}
 
 def combine_shapes(shape_1: Shape, shape_2: Shape, debug=True):
+    cache_key_1 = f"{str(hash(str(shape_1.map)))},{hash(str(shape_2.map))}"
+    cache_key_2 = f"{hash(str(shape_2.map))},{hash(str(shape_1.map))}"
+
+    if cached:=combine_cache.get(cache_key_1, combine_cache.get(cache_key_2)):
+        return cached.copy()
+
     smallest_shape = None
 
     for a in range(Directions.LEFT.value + 1):
@@ -178,19 +188,28 @@ def combine_shapes(shape_1: Shape, shape_2: Shape, debug=True):
                 for h in range(0, shape_1.length):
                     canvas = Canvas(shape_1, shape_2, abs(v), 0)
                     canvas.draw(shape_1, 0, 0, "A")
-                    try:
-                        canvas.draw(shape_2, v, h, "B")
-                        new_shape = trim(canvas.canvas, {"A", "B"})
-                        if canvas.hash_count == (shape_1.hashes + shape_2.hashes) and (smallest_shape is None or  new_shape.area < smallest_shape.area):
-                            smallest_shape = new_shape
+                    # try:
+                    canvas.draw(shape_2, v, h, "B")
+                    new_shape = trim(canvas.canvas, {"A", "B"})
+                    if canvas.hash_count == (shape_1.hashes + shape_2.hashes) and (smallest_shape is None or  new_shape.area < smallest_shape.area):
+                        smallest_shape = new_shape
 
-                        # if debug:
-                        #     print("-"*20)
-                        #     for line in new_shape.map:
-                        #         print(line)
+                        if debug:
+                            print("-"*20)
+                            for line in new_shape.map:
+                                print(line)
 
-                    except Exception:
-                        continue
+                    # except Exception:
+                    #     continue
+    if smallest_shape:
+        combine_cache[cache_key_2] = smallest_shape.copy()
+        combine_cache[cache_key_1] = smallest_shape.copy()
+    else:
+        smallest_shape = Shape([[]])
+        smallest_shape.height = sys.maxsize
+        smallest_shape.length = sys.maxsize
+        combine_cache[cache_key_2] = None
+        combine_cache[cache_key_1] = None
     return smallest_shape
 
                 # Add shape 1 from origin (v*-1),0
@@ -212,6 +231,43 @@ def trim(new_map:list[list[str]], pattern_chars: set[str] = {"#"}):
         _vertical_slice(new_map, -1, True)
     return Shape(new_map)
 
+def build_list(presents: list[int]) -> list[Shape]:
+    present_list = []
+    for i, present_count in enumerate(presents):
+        for x in range(present_count):
+            present_list.append(shapes[i].copy())
+    return present_list
+
+def quick_filter(presents: list[Shape], area_x, area_y) -> bool:
+    area = area_x * area_y
+    pres_area = 0
+    for pres in presents:
+        pres_area += pres.hashes
+    return pres_area > area
+
+def can_fit(area_x, area_y, present_list:list[int]) -> bool:
+    present_list = build_list(present_list)
+    if quick_filter(present_list, area_x, area_y):
+        print("QUICK FILTER!")
+        return False
+
+    for j in permutations(present_list):
+        present_a = None
+        for i, present in enumerate(j):
+            if i == 0:
+                present_a = present.copy()
+            else:
+                present_b = present.copy()
+                present_a = combine_shapes(present_a, present_b, True)
+
+            if present_a is None or present_a.length > area_x or present_a.height > area_y:
+                break
+        if present_a is not None and present_a.length <= area_x and present_a.height <= area_y:
+            return True
+
+    if present_a is not None and present_a.length <= area_x and present_a.height <= area_y:
+        return True
+    return False
 
 
 
@@ -239,23 +295,25 @@ for i, line in enumerate(input):
     area_x, area_y = split.pop(0).strip().split("x")
     area = int(area_x) * int(area_y)
     present_area = 0
-    for num in split:
-        # Figure out smallest area using rotations
-        pass
 
-# print(f"Total is {total}")
+    print('*' * 30)
+    if can_fit(int(area_x), int(area_y), [int(num) for num in split]):
+        print("IT FITS")
+        total += 1
+
+print(f"Total is {total}")
 # new_shape = shapes[4].copy().combine(shapes[4].copy())
 # print("-"*20)
 # for line in new_shape.map:
 #     print(line)
 
-print("USING CANVAS!!!!!!!!")
-new_shape = combine_shapes(shapes[4].copy(), shapes[4].copy(), False)
-print("-"*20)
-for line in new_shape.map:
-    print(line)
-
-second_shape = combine_shapes(new_shape.copy(), shapes[0].copy())
-print("-"*20)
-for line in second_shape.map:
-    print(line)
+# print("USING CANVAS!!!!!!!!")
+# new_shape = combine_shapes(shapes[4].copy(), shapes[4].copy(), False)
+# print("-"*20)
+# for line in new_shape.map:
+#     print(line)
+#
+# second_shape = combine_shapes(new_shape.copy(), shapes[0].copy())
+# print("-"*20)
+# for line in second_shape.map:
+#     print(line)
