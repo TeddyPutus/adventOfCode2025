@@ -193,6 +193,7 @@ def combine_shapes(shape_1: Shape, shape_2: Shape, debug=True):
                     new_shape = trim(canvas.canvas, {"A", "B"})
                     if canvas.hash_count == (shape_1.hashes + shape_2.hashes) and (smallest_shape is None or  new_shape.area < smallest_shape.area):
                         smallest_shape = new_shape
+                        # potentially exit early
 
                         if debug:
                             print("-"*20)
@@ -243,13 +244,15 @@ def quick_filter(presents: list[Shape], area_x, area_y) -> bool:
     pres_area = 0
     for pres in presents:
         pres_area += pres.hashes
-    return pres_area > area
+    return pres_area >= area
 
 def can_fit(area_x, area_y, present_list:list[int]) -> bool:
     present_list = build_list(present_list)
     if quick_filter(present_list, area_x, area_y):
         print("QUICK FILTER!")
         return False
+    else:
+        return True
 
     for j in permutations(present_list):
         present_a = None
@@ -272,7 +275,7 @@ def can_fit(area_x, area_y, present_list:list[int]) -> bool:
 
 
 # filepath = "day12_example.txt"
-filepath = "C:/Users/teddy/IdeaProjects/adventOfCode2025/src/day12/day_12_example.txt"
+filepath = "C:/Users/teddy/IdeaProjects/adventOfCode2025/src/day12/day12.txt"
 
 total = 0
 shapes = {}
@@ -294,26 +297,12 @@ for i, line in enumerate(input):
 
     area_x, area_y = split.pop(0).strip().split("x")
     area = int(area_x) * int(area_y)
-    present_area = 0
+    area_x = int(area_x)
+    area_y = int(area_y)
+    presents = [int(num) for num in split]
 
-    print('*' * 30)
-    if can_fit(int(area_x), int(area_y), [int(num) for num in split]):
+    if can_fit(area_x, area_y, presents):
         print("IT FITS")
         total += 1
 
-print(f"Total is {total}")
-# new_shape = shapes[4].copy().combine(shapes[4].copy())
-# print("-"*20)
-# for line in new_shape.map:
-#     print(line)
-
-# print("USING CANVAS!!!!!!!!")
-# new_shape = combine_shapes(shapes[4].copy(), shapes[4].copy(), False)
-# print("-"*20)
-# for line in new_shape.map:
-#     print(line)
-#
-# second_shape = combine_shapes(new_shape.copy(), shapes[0].copy())
-# print("-"*20)
-# for line in second_shape.map:
-#     print(line)
+print(f"(PART 1) Total is: {total}")
