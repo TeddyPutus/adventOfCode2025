@@ -1,16 +1,6 @@
 from __future__ import annotations
 
-import math
 import sys
-from enum import Enum
-from itertools import permutations
-
-
-class Directions(Enum):
-    UP = 0
-    RIGHT = 1
-    DOWN = 2
-    LEFT = 3
 
 class Shape:
     def __init__(self, map: list[list[str]]):
@@ -43,82 +33,6 @@ class Shape:
               if char == ".":
                   empty+=1
         return empty
-
-    @staticmethod
-    def _pad(map_1: list[list[str]], map_2: list[list[str]], v_shift: int, h_shift: int):
-        blank_line = [".", ".", "."]
-        h_pad = ["." for i in range(h_shift + 1)]
-        for i in range(v_shift):
-            map_1.insert(0, blank_line)
-            map_2.append(blank_line)
-        for i in range(len(map_1)):
-            map_1[i] = h_pad + list(map_1[i])
-            map_2[i] = list(map_2[i]) + h_pad
-        return map_1, map_2
-
-    @staticmethod
-    def _combine(shape_1: Shape, shape_2: Shape, v_shift: int, h_shift: int) -> Shape | None:
-        def _vertical_slice(map: list[list[str]], index:int, pop=False):
-            if pop:
-                return [m.pop(index) for m in map]
-            return [m[index] for m in map]
-
-
-        map_1, map_2 = Shape._pad(shape_1.map.copy(), shape_2.map.copy(), v_shift, h_shift)
-
-        new_map = []
-        hash_count = 0
-        hash_target = shape_1.hashes + shape_2.hashes
-        for y in range(len(map_1)):
-            new_line = []
-            for x in range(len(map_1[0])):
-                if map_1[y][x] == "#" or map_2[y][x] == "#":
-                    new_line.append("#")
-                    hash_count += 1
-                else:
-                    new_line.append(".")
-            new_map.append(new_line)
-        if hash_count != hash_target:
-            return None
-
-        print("Shapes don't overlap")
-        # Trim rows and columns containing only dots
-        while len(new_map) and "#" not in new_map[0]:
-            new_map.pop(0)
-        while len(new_map) and "#" not in new_map[-1]:
-            new_map.pop()
-        while len(new_map[0]) and "#" not in _vertical_slice(new_map, 0, False):
-            _vertical_slice(new_map, 0, True)
-        while len(new_map[0]) and "#" not in _vertical_slice(new_map, -1, False):
-            _vertical_slice(new_map, -1, True)
-        return Shape(new_map)
-
-    def combine(self, shape: Shape) -> Shape:
-        smallest_shape = None
-        # rotate each, figure out what the smallest resulting shape is. Probably need to cache this somehow!
-        for a in range(Directions.LEFT.value + 1):
-            self.map = self.rotate(a)
-
-            if self.map != shape.map:
-                print("MAPS DIFFER")
-                for line in self.map:
-                    print(line)
-                print("MAPS DIFFER")
-                for line in shape.map:
-                    print(line)
-            # for b in range(Directions.LEFT.value + 1):
-                # shape.map = shape.rotate(b)
-            for x in range(0, 4):
-                for y in range (0, 4):
-                    new_shape = Shape._combine(self, shape, x, y)
-                    if new_shape is not None:
-                        print("-"*10)
-                        for line in new_shape.map:
-                            print(line)
-
-                    if smallest_shape == None or (new_shape is not None and smallest_shape.area > new_shape.area):
-                        smallest_shape = new_shape
-        return smallest_shape
 
 class Canvas:
     def __init__(self, shape_1: Shape, shape_2: Shape, v_pad: int, h_pad: int):
@@ -177,10 +91,10 @@ def combine_shapes(shape_1: Shape, shape_2: Shape, debug=True):
 
     smallest_shape = None
 
-    for a in range(Directions.LEFT.value + 1):
+    for a in range(4):
         if a > 0:
             shape_1.rotate()
-        for b in range(Directions.LEFT.value + 1):
+        for b in range(4):
             if b > 0:
                 shape_2.rotate()
 
@@ -213,9 +127,6 @@ def combine_shapes(shape_1: Shape, shape_2: Shape, debug=True):
         combine_cache[cache_key_1] = None
     return smallest_shape
 
-                # Add shape 1 from origin (v*-1),0
-                # Add shape 2 0, h*-1
-                # check number of hashes, if correct amount AND area smaller than smallest shape, replace smallest shape
 def trim(new_map:list[list[str]], pattern_chars: set[str] = {"#"}):
     def _vertical_slice(map: list[list[str]], index:int, pop=False):
         if pop:
@@ -254,27 +165,6 @@ def can_fit(area_x, area_y, present_list:list[int]) -> bool:
     else:
         return True
 
-    for j in permutations(present_list):
-        present_a = None
-        for i, present in enumerate(j):
-            if i == 0:
-                present_a = present.copy()
-            else:
-                present_b = present.copy()
-                present_a = combine_shapes(present_a, present_b, True)
-
-            if present_a is None or present_a.length > area_x or present_a.height > area_y:
-                break
-        if present_a is not None and present_a.length <= area_x and present_a.height <= area_y:
-            return True
-
-    if present_a is not None and present_a.length <= area_x and present_a.height <= area_y:
-        return True
-    return False
-
-
-
-# filepath = "day12_example.txt"
 filepath = "C:/Users/teddy/IdeaProjects/adventOfCode2025/src/day12/day12.txt"
 
 total = 0
